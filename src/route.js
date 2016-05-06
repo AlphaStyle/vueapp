@@ -1,5 +1,3 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
 import Hello from './components/Hello'
 import Login from './components/Login'
 import Register from './components/Register'
@@ -8,13 +6,7 @@ import Main from './components/Main'
 import Blogs from './components/Blogs'
 import ModalTest from './components/ModalTest'
 
-Vue.use(VueRouter)
-
-var router = new VueRouter({
-  history: false
-})
-
-router.map({
+export default {
   '/login': {
     component: Login
   },
@@ -36,6 +28,4 @@ router.map({
   '/test': {
     component: ModalTest
   }
-})
-
-export default router
+}

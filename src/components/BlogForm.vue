@@ -1,22 +1,31 @@
 <template>
 <div class="blogForm my-green">
-  <form class="my-container" v-on:submit.prevent="addBlog(author, title, content), clearForm()" accept-charset="utf-8">
-    <div class="input-field">
-      <input required="" v-model="author" id="author" type="text" class="validate">
-      <label for="author">Author</label>
-    </div>
-    <div class="input-field">
-      <input required="" v-model="title" id="title" type="text" class="validate">
-      <label for="title">Title</label>
-    </div>
-    <div class="input-field">
-      <textarea required="" v-model="content" id="content" type="text" class="materialize-textarea"></textarea>
-      <label for="content">Content</label>
-    </div>
-    <button class="btn waves-effect waves-light" type="submit">Publish
-      <i class="material-icons right">publish</i>
-    </button>
-  </form>
+  <validator name="blogFormVal">
+    <form class="my-container" v-on:submit.prevent="addBlog(author, title, content), clearForm()" accept-charset="utf-8">
+    
+      <div class="input-field">
+        <input v-validate:validAuthor="['required']" v-model="author" id="author" type="text" class="validate">
+        <label for="author">*Author</label>
+      </div>
+      
+      <div class="input-field">
+        <input v-validate:validTitle="['required']" v-model="title" id="title" type="text" class="validate">
+        <label for="title">*Title</label>
+      </div>
+      
+      <div class="input-field">
+        <textarea v-validate:validContent="['required']" v-model="content" id="content" type="text" class="materialize-textarea"></textarea>
+        <label for="content">*Content</label>
+      </div>
+      
+      <p v-show="!$blogFormVal.valid" class="my-red">*All fields are required!</p>
+      
+      <button class="btn waves-effect waves-light" type="submit" v-if="$blogFormVal.valid">Publish
+        <i class="material-icons right">publish</i>
+      </button>
+      
+    </form>
+  </validator>
 </div>
 </template>
 
@@ -60,6 +69,9 @@ export default {
 }
 .my-green {
   color: #42b983;
+}
+.my-red{
+  color:red;
 }
 .my-container {
   display: flex-inline;

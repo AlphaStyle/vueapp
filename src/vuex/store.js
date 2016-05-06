@@ -5,19 +5,28 @@ Vue.use(Vuex)
 Vue.config.debug = true
 
 const state = {
-  blogs: [{
-    author: 'AlphaStyle',
-    title: 'First Blog Post',
-    content: 'Blog Content'
+  body: {
+    Author: 'author',
+    Title: 'title',
+    Content: 'content',
+    ID: 0
   }
-]}
+}
 
+var id = 1
 const mutations = {
   ADD_BLOG (state, author, title, content) {
-    state.blogs.push({
-      author: author,
-      title: title,
-      content: content
+    Vue.http.post('http://localhost:9000/api/addblog', {
+      Author: author,
+      Title: title,
+      Content: content,
+      ID: id++
+    })
+    .then(function (data, status, request) {
+      console.log('Blog saved successfully.')
+    })
+    .catch(function (data, status, request) {
+      console.log('There was a problem saving this Blog. Might be server problems. Please try again.')
     })
   },
 

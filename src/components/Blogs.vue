@@ -67,12 +67,10 @@
       </div>
     </modal>
   </div>
-
-  
 </template>
 
 <script>
-import { editBlog, deleteBlog } from '../vuex/actions.js'
+import { editBlog, deleteBlog, getBlogs } from '../vuex/actions.js'
 import Modal from './Modal.html'
 
 export default {
@@ -85,6 +83,9 @@ export default {
       editContent: '',
       editId: 0
     }
+  },
+  ready: () => {
+    getBlogs()
   },
   components: {
     modal: {
