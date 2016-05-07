@@ -38,11 +38,13 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/api/getblogs", getBlogs) // localhost:9000/api/getblogs
-	http.HandleFunc("/api/addblog", addBlog)   // localhost:9000/api/addblog
+	http.HandleFunc("/api/getblogs", getBlogs)     // localhost:9000/api/getblogs
+	http.HandleFunc("/api/addblog", addBlog)       // localhost:9000/api/addblog
+	http.HandleFunc("/api/deleteblog", deleteBlog) // localhost:9000/api/deleteblog
+	http.HandleFunc("/api/editblog", editBlog)     // localhost:9000/api/editblog
 
 	log.Fatal(http.ListenAndServe(":9000", nil)) // Server listening at localhost:9000
-	log.Println("Server listening at localhost:9000 \n")
+	log.Println("Server listening at localhost:9000")
 }
 
 // Register is API call to Register a User (Add User to DB)
@@ -84,7 +86,7 @@ func getBlogs(w http.ResponseWriter, r *http.Request) {
 
 		// If no data in table return error
 		if res.IsNil() {
-			log.Println("GetBlogs Row not found \n")
+			log.Println("GetBlogs Row not found")
 			return
 		}
 
@@ -106,8 +108,8 @@ func getBlogs(w http.ResponseWriter, r *http.Request) {
 
 // AddBlog is API call to Add Blog in DB
 func addBlog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json") // Set header to JSON
 	fmt.Println(r.Header.Get("Origin"))
-
 	if origin := r.Header.Get("Origin"); origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 		w.Header().Set("Access-Control-Allow-Methods", "POST")
@@ -136,7 +138,7 @@ func addBlog(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 			return
 		}
-
+		// Will print 1 row inserted
 		fmt.Printf("%d row inserted \n", resp.Inserted)
 	}
 }
@@ -144,5 +146,67 @@ func addBlog(w http.ResponseWriter, r *http.Request) {
 // DeleteBlog is API Call to delete blog from DB
 func deleteBlog(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json") // Set header to JSON
-	fmt.Fprintln(w, "DeleteBlog")
+	fmt.Println(r.Header.Get("Origin"))
+	if origin := r.Header.Get("Origin"); origin != "" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
+
+	if r.Method == "POST" {
+		// Getting the JSON sent from Frontend
+		// And then decoding the JSON to Blog Struct
+		var b Blogs
+		json.NewDecoder(r.Body).Decode(&b)
+		// Show the result
+		fmt.Printf("%v \n", b)
+
+		// Removing the Blog Post from RethingDB
+		// TODO Add Validation
+		resp, err := rethink.DB("api").Table("blogs").Get(b.ID).Delete().RunWrite(session)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		// will print 1 row deleted in console
+		fmt.Printf("%d row deleted \n", resp.Deleted)
+	}
+}
+
+// editBlog is API call to Edit Blog in DB
+func editBlog(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json") // Set header to JSON
+	fmt.Println(r.Header.Get("Origin"))
+	if origin := r.Header.Get("Origin"); origin != "" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers",
+			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	}
+
+	if r.Method == "POST" {
+		// Getting the JSON sent from Frontend
+		// And then decoding the JSON to Blog Struct
+		var b Blogs
+		json.NewDecoder(r.Body).Decode(&b)
+		// Show the result
+		fmt.Printf("%v \n", b)
+
+		// Adding the JSON / Blog Struct to RethingDB
+		// TODO Add Validation
+		resp, err := rethink.DB("api").Table("blogs").Get(b.ID).Update(Blogs{
+			ID: b.ID,
+			Blog: Blog{
+				Author:  b.Author,
+				Title:   b.Title,
+				Content: b.Content,
+			}}).RunWrite(session)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		// Will print 1 row replaced
+		fmt.Printf("%d row replaced \n", resp.Replaced)
+	}
 }

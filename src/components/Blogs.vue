@@ -4,22 +4,23 @@
       <h1>{{ msg }}</h1>
     </div>
     <div class="my-card">
-      <div v-for="(key, value) in blogs">
+      <div v-for="(key, value) in blogs">  <!-- | orderBy 'ID' -1 -->
         <div class="row">
           <div class="card blue-grey darken-1">
             <div class="card-content white-text">
               <span class="card-title">{{ value.Title }}</span>
-              <p>Author: {{ value.Author }}</p>
+              <p>Author: {{ value.Author }} ID: {{ value.ID }} key: {{ key }}</p>
               <p>{{ value.Content }}</p>
             </div>
 
             <div class="card-action">
-              <a @click.prevent='deleteBlog(key)' href="">Delete</a>
+              <a @click.prevent='deleteBlog(value.ID, key)' href="">Delete</a>
               <a @click.prevent="showModal = true, 
                 editTitle = value.Title, 
                 editAuthor = value.Author, 
                 editContent = value.Content,
-                editId = key"
+                editKey = key,
+                editId = value.ID"
                 href="">Edit</a>
             </div>
           </div>
@@ -35,7 +36,8 @@
       :title.sync="editTitle" 
       :author.sync="editAuthor" 
       :content.sync="editContent"
-      :id.sync="editId">
+      :eid.sync="editId"
+      :ekey.sync="editKey">
 
       <div slot="title">
         <label for="title">Title</label>
@@ -55,7 +57,7 @@
       <div slot="footer">
         Click save or cancel
         <button class="modal-default-button btn waves-effect waves-light"
-        @click="editBlog(editAuthor, editTitle, editContent, editId), showModal = false">
+        @click="editBlog(editAuthor, editTitle, editContent, editKey, editId), showModal = false">
         Save
       </button>
 
@@ -80,7 +82,8 @@ export default {
       editTitle: '',
       editAuthor: '',
       editContent: '',
-      editId: 0
+      editId: 0,
+      editKey: 0
     }
   },
   ready () {
@@ -107,7 +110,11 @@ export default {
           type: String,
           required: true
         },
-        id: {
+        eid: {
+          type: Number,
+          required: true
+        },
+        ekey: {
           type: Number,
           required: true
         }
