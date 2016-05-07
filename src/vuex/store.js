@@ -1,19 +1,22 @@
+/* eslint-disable */
+
 import Vue from 'vue'
 import Vuex from 'vuex'
 
 Vue.use(Vuex)
 Vue.config.debug = true
 
+// TODO Bug with id when refresh page
+var id = 0
 const state = {
-  body: {
-    Author: 'author',
-    Title: 'title',
-    Content: 'content',
-    ID: 0
-  }
+  blogs: [{
+    Title: 'test',
+    Author: 'test',
+    Content: 'test',
+    ID: id++
+  }]
 }
 
-var id = 1
 const mutations = {
   ADD_BLOG (state, author, title, content) {
     Vue.http.post('http://localhost:9000/api/addblog', {
@@ -34,10 +37,52 @@ const mutations = {
     delete state.blogs.splice(id, 1)
   },
 
+  LOAD_BLOG (state) {
+    Vue.http.get('http://localhost:9000/api/getblogs').then(function (response) {
+      var blogs = response.data
+      for (var n in blogs) {
+        if (blogs.hasOwnProperty(n)) {
+          // TODO Ugly Quick Fix
+          if (n == 0) {
+            Vue.set(state.blogs[n], 'Author', blogs[n].Author)
+            Vue.set(state.blogs[n], 'Title', blogs[n].Title)
+            Vue.set(state.blogs[n], 'Content', blogs[n].Content)
+            Vue.set(state.blogs[n], 'ID', blogs[n].ID)
+          }
+          // TODO Ugly Quick Fix
+          if (n >= id && n > 0 && n != id) {
+            state.blogs.push({
+              Author: blogs[n].Author,
+              Title: blogs[n].Title,
+              Content: blogs[n].Content,
+              ID: blogs[n].ID
+            })
+            id = n
+          }
+          // TODO Ugly Quick Fix
+          if (n == id && n > 0) {
+            state.blogs.push({
+              Author: blogs[n].Author,
+              Title: blogs[n].Title,
+              Content: blogs[n].Content,
+              ID: blogs[n].ID
+            })
+            id++
+          }
+        }
+        console.log('n is ' + n)
+        console.log('id ' + id)
+        console.log('blogs id ' + blogs[n].ID)
+      }
+    }, function (response) {
+      // error callback
+      console.log(response)
+    })
+  },
   EDIT_BLOG (state, editAuthor, editTitle, editContent, id) {
-    Vue.set(state.blogs[id], 'author', editAuthor)
-    Vue.set(state.blogs[id], 'title', editTitle)
-    Vue.set(state.blogs[id], 'content', editContent)
+    Vue.set(state.blogs[id], 'Author', editAuthor)
+    Vue.set(state.blogs[id], 'Title', editTitle)
+    Vue.set(state.blogs[id], 'Content', editContent)
   }
 }
 

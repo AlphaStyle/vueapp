@@ -96,7 +96,7 @@ func getBlogs(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Sending Database info as JSON to request
-		result, err = json.Marshal(blogs)
+		result, err := json.Marshal(blogs)
 		if err != nil {
 			log.Printf("getBlogs json marshal error: %s \n", err)
 		}

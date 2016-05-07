@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Hello from './components/Hello'
 import Login from './components/Login'
 import Register from './components/Register'

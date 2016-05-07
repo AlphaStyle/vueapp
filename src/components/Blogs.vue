@@ -3,23 +3,22 @@
     <div class="my-header">
       <h1>{{ msg }}</h1>
     </div>
-
     <div class="my-card">
       <div v-for="(key, value) in blogs">
         <div class="row">
           <div class="card blue-grey darken-1">
             <div class="card-content white-text">
-              <span class="card-title">{{ value.title }}</span>
-              <p>Author: {{ value.author }}</p>
-              <p>{{ value.content }}</p>
+              <span class="card-title">{{ value.Title }}</span>
+              <p>Author: {{ value.Author }}</p>
+              <p>{{ value.Content }}</p>
             </div>
 
             <div class="card-action">
               <a @click.prevent='deleteBlog(key)' href="">Delete</a>
               <a @click.prevent="showModal = true, 
-                editTitle = value.title, 
-                editAuthor = value.author, 
-                editContent = value.content,
+                editTitle = value.Title, 
+                editAuthor = value.Author, 
+                editContent = value.Content,
                 editId = key"
                 href="">Edit</a>
             </div>
@@ -70,7 +69,7 @@
 </template>
 
 <script>
-import { editBlog, deleteBlog, getBlogs } from '../vuex/actions.js'
+import { editBlog, deleteBlog, loadBlogs } from '../vuex/actions.js'
 import Modal from './Modal.html'
 
 export default {
@@ -84,8 +83,8 @@ export default {
       editId: 0
     }
   },
-  ready: () => {
-    getBlogs()
+  ready () {
+    loadBlogs()
   },
   components: {
     modal: {
@@ -145,7 +144,7 @@ export default {
   display: flex;
   align-self: center;
   width: 500px;
-  flex-direction: column-reverse;
+  flex-direction: column;
 }
 .my-header {
   align-content: center;

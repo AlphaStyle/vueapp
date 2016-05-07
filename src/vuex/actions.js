@@ -1,3 +1,4 @@
+/* eslint-disable */
 export const addBlog = ({ dispatch }, author, title, content) => {
   dispatch('ADD_BLOG', author, title, content)
 }
@@ -10,16 +11,9 @@ export const editBlog = ({ dispatch }, editAuthor, editTitle, editContent, id) =
   dispatch('EDIT_BLOG', editAuthor, editTitle, editContent, id)
 }
 
-import Vue from 'vue'
+// TODO Fix this !! Dont import store
+import store from './store.js'
 
-export const getBlogs = () => {
-  // GET request
-  Vue.http.get('http://localhost:9000/api/getblogs').then(function (response) {
-    console.log(response.data)
-    // TODO Add this into frontend
-    // set data on vm
-    // this.$set('someData', response.data)
-  }, function (response) {
-    // error callback
-  })
+export const loadBlogs = () => {
+  store.dispatch('LOAD_BLOG')
 }
