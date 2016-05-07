@@ -6,24 +6,29 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 Vue.config.debug = true
 
-// TODO Bug with id when refresh page
 var id = 0
 const state = {
   blogs: [{
     Title: 'test',
     Author: 'test',
     Content: 'test',
-    ID: id++
+    ID: id
   }]
 }
 
 const mutations = {
   ADD_BLOG (state, author, title, content) {
+    state.blogs.push({
+      Author: author,
+      Title: title,
+      Content: content,
+      ID: id = id + 1
+    })
     Vue.http.post('http://localhost:9000/api/addblog', {
       Author: author,
       Title: title,
       Content: content,
-      ID: id++
+      ID: id
     })
     .then(function (data, status, request) {
       console.log('Blog saved successfully.')
@@ -43,24 +48,20 @@ const mutations = {
       for (var n in blogs) {
         if (blogs.hasOwnProperty(n)) {
           // TODO Ugly Quick Fix
-          if (n == 0) {
+          if (n == 0 && id == 0) {
             Vue.set(state.blogs[n], 'Author', blogs[n].Author)
             Vue.set(state.blogs[n], 'Title', blogs[n].Title)
             Vue.set(state.blogs[n], 'Content', blogs[n].Content)
             Vue.set(state.blogs[n], 'ID', blogs[n].ID)
-          }
-          // TODO Ugly Quick Fix
-          if (n >= id && n > 0 && n != id) {
+          } else if (n > id) {
             state.blogs.push({
               Author: blogs[n].Author,
               Title: blogs[n].Title,
               Content: blogs[n].Content,
               ID: blogs[n].ID
             })
-            id = n
-          }
-          // TODO Ugly Quick Fix
-          if (n == id && n > 0) {
+            id = id + 2
+          } else if (n == id) {
             state.blogs.push({
               Author: blogs[n].Author,
               Title: blogs[n].Title,
@@ -70,8 +71,8 @@ const mutations = {
             id++
           }
         }
-        console.log('n is ' + n)
-        console.log('id ' + id)
+        console.log('last n is ' + n)
+        console.log('last id ' + id)
         console.log('blogs id ' + blogs[n].ID)
       }
     }, function (response) {
