@@ -4,7 +4,7 @@
       <h1>{{ msg }}</h1>
     </div>
     <div class="my-card">
-      <div v-for="(key, value) in blogs">  <!-- | orderBy 'ID' -1 -->
+      <div v-for="(key, value) in blogs">  <!-- | orderBy 'ID' -1 | limitBy 2 -->
         <div class="row">
           <div class="card blue-grey darken-1">
             <div class="card-content white-text">
@@ -123,7 +123,7 @@ export default {
   },
   vuex: {
     getters: {
-      blogs: state => state.blogs
+      blogs: state => state.blogs.sort((a, b) => b.ID - a.ID)
     },
     actions: {
       deleteBlog,
@@ -151,7 +151,7 @@ export default {
   display: flex;
   align-self: center;
   width: 500px;
-  flex-direction: column-reverse;
+  flex-direction: column;
 }
 .my-header {
   align-content: center;

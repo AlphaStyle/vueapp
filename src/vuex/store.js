@@ -19,12 +19,16 @@ const state = {
 
 const mutations = {
   ADD_BLOG (state, author, title, content) {
+    // Localy ------------------
     state.blogs.push({
       Author: author,
       Title: title,
       Content: content,
       ID: id = id + 1
     })
+    // Localy ------------------
+    
+    // API Call to backend
     Vue.http.post('http://localhost:9000/api/addblog', {
       Author: author,
       Title: title,
@@ -42,8 +46,11 @@ const mutations = {
   },
 
   DELETE_BLOG (state, dbKey, arrKey) {
+    // Localy ------------------
     delete state.blogs.splice(arrKey, 1)
-
+    // Localy ------------------
+    
+    // API Call to backend
     Vue.http.post('http://localhost:9000/api/deleteblog', {
       Author: 'author',
       Title: 'title',
@@ -61,6 +68,7 @@ const mutations = {
   },
 
   LOAD_BLOG (state) {
+    // API Call to backend
     Vue.http.get('http://localhost:9000/api/getblogs').then(function (response) {
       let tempID = 0
       var blogs = response.data
@@ -103,10 +111,13 @@ const mutations = {
   },
   
   EDIT_BLOG (state, editAuthor, editTitle, editContent, editKey, editId) {
+    // Localy ------------------
     Vue.set(state.blogs[editKey], 'Author', editAuthor)
     Vue.set(state.blogs[editKey], 'Title', editTitle)
     Vue.set(state.blogs[editKey], 'Content', editContent)
+    // Localy ------------------
     
+    // API Call to backend
     Vue.http.post('http://localhost:9000/api/editblog', {
       Author: editAuthor,
       Title: editTitle,
