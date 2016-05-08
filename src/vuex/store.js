@@ -6,7 +6,8 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 Vue.config.debug = true
 
-var id = 0
+var id = 0 // init Global ID var
+// The very first init state
 const state = {
   blogs: [{
     Title: 'test',
@@ -31,16 +32,18 @@ const mutations = {
       ID: id
     })
     .then(function (data, status, request) {
+      // Success
       console.log('Blog saved successfully.')
     })
     .catch(function (data, status, request) {
-      console.log('There was a problem saving this Blog. Might be server problems. Please try again.')
+      // error callback
+      console.log('There was a problem saving this Blog.')
     })
   },
 
   DELETE_BLOG (state, dbKey, arrKey) {
     delete state.blogs.splice(arrKey, 1)
-    console.log('db key ' + dbKey)
+
     Vue.http.post('http://localhost:9000/api/deleteblog', {
       Author: 'author',
       Title: 'title',
@@ -48,12 +51,13 @@ const mutations = {
       ID: dbKey
     })
     .then(function (data, status, request) {
+      // Success
       console.log('Blog Deleted successfully.')
     })
     .catch(function (data, status, request) {
-      console.log('There was a problem deleting this Blog. Might be server problems. Please try again.')
+      // error callback
+      console.log('There was a problem deleting this Blog.')
     })
-    console.log('arr key ' + arrKey)
   },
 
   LOAD_BLOG (state) {
@@ -86,25 +90,19 @@ const mutations = {
             id++
           }
         }
-        console.log('id ' + id)
-        console.log('blogID ' + blogs[n].ID)
         if (blogs[n].ID > tempID) {
           tempID = blogs[n].ID + 1
         }
       }
-      console.log('tempID ' + tempID)
       id = tempID
-      console.log('new id ' + id)
     }, function (response) {
       // error callback
+      console.log('Error in LoadBlog mutation')
       console.log(response)
     })
   },
   
   EDIT_BLOG (state, editAuthor, editTitle, editContent, editKey, editId) {
-    console.log('editKey: ' + editKey)
-    console.log(state.blogs[editKey])
-    console.log('editId: ' + editId)
     Vue.set(state.blogs[editKey], 'Author', editAuthor)
     Vue.set(state.blogs[editKey], 'Title', editTitle)
     Vue.set(state.blogs[editKey], 'Content', editContent)
@@ -116,10 +114,12 @@ const mutations = {
       ID: editId
     })
     .then(function (data, status, request) {
+      // Success
       console.log('Blog Edit successfully.')
     })
     .catch(function (data, status, request) {
-      console.log('There was a problem Editing this Blog. Might be server problems. Please try again.')
+      // error callback
+      console.log('There was a problem Editing this Blog.')
     })
   }
 }

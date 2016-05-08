@@ -77,7 +77,7 @@ func getBlogs(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		// Connect to database
 		// Get all data from table "Blogs"
-		res, err := rethink.DB("api").Table("blogs").Run(session)
+		res, err := rethink.DB("api").Table("blogs").OrderBy("id").Run(session)
 		if err != nil {
 			log.Printf("getBlogs Database error: %s \n", err)
 			return

@@ -151,7 +151,7 @@ export default {
   display: flex;
   align-self: center;
   width: 500px;
-  flex-direction: column;
+  flex-direction: column-reverse;
 }
 .my-header {
   align-content: center;
