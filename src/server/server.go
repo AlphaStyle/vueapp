@@ -1,215 +1,69 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
-	rethink "github.com/dancannon/gorethink"
+	"github.com/gorilla/mux"
+
+	"./api"
 )
 
-// Blog is the blog struct that contain the Blog-form
-type Blog struct {
-	Author  string `gorethink:"author"`
-	Title   string `gorethink:"title"`
-	Content string `gorethink:"content"`
-}
-
-// Blogs is the blogs struct to
-// formate it better before added to DB
-type Blogs struct {
-	ID   int `gorethink:"id"`
-	Blog `gorethink:"blogs"`
-}
-
-// Make the DB Session Global
-var session *rethink.Session
-
-func init() {
-	// Connecting to the database
-	var err error
-	session, err = rethink.Connect(rethink.ConnectOpts{
-		Address: "localhost:28015",
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// TODO Create one main handleFunc /api/:id (Switch case)
-// TODO create Validation function (Switch case)
-// TODO create Authorization function (and cookies)
 func main() {
-	http.HandleFunc("/api/getblogs", getBlogs)     // localhost:9000/api/getblogs
-	http.HandleFunc("/api/addblog", addBlog)       // localhost:9000/api/addblog
-	http.HandleFunc("/api/deleteblog", deleteBlog) // localhost:9000/api/deleteblog
-	http.HandleFunc("/api/editblog", editBlog)     // localhost:9000/api/editblog
+	// TODO Read about URL parsing so I dont need to use Gorilla Mux
+	route := mux.NewRouter()
+	// localhost:9000/api/:type (type = getBlogs, addBlog, editBlog, deleteBlog)
+	route.HandleFunc("/api/{type}", apiHandler).Methods("GET, POST, OPTIONS")
 
-	log.Fatal(http.ListenAndServe(":9000", nil)) // Server listening at localhost:9000
+	// Server listening at localhost:9000
+	log.Fatal(http.ListenAndServe(":9000", route))
 	log.Println("Server listening at localhost:9000")
 }
 
-// Register is API call to Register a User (Add User to DB)
-func register(s string) {
-	fmt.Println(s)
-}
-
-// Login is API call to login (Check DB if exist)
-func login(s string) {
-	fmt.Println(s)
-}
-
-// Logout is API call to logout (delete cookie)
-func logout(w http.ResponseWriter, r *http.Request) {
+// apiHandler is the main handler for all routes / API calls
+func apiHandler(w http.ResponseWriter, r *http.Request) {
+	// Allowing / Accepting everything as I am testing and developing
+	origin := r.Header.Get("Origin")
 	w.Header().Set("Content-Type", "application/json") // Set header to JSON
-	fmt.Fprintln(w, "Logout")
-}
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+	// TODO create Authorization function (and cookies)
+	// TODO create Validation function
 
-// GetBlogs is API call to get all the blogs in DB
-func getBlogs(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Header.Get("Origin"))
-	w.Header().Set("Content-Type", "application/json") // Set header to JSON
-	if origin := r.Header.Get("Origin"); origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "GET")
-		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	}
-
-	if r.Method == "GET" {
-		// Connect to database
-		// Get all data from table "Blogs"
-		res, err := rethink.DB("api").Table("blogs").OrderBy("id").Run(session)
+	urlVars := mux.Vars(r)
+	switch urlVars["type"] {
+	case "getblogs": // localhost:9000/getblogs
+		// Get the blogs from DB with API call Get()
+		result, err := api.Get()
 		if err != nil {
-			log.Printf("getBlogs Database error: %s \n", err)
-			return
+			log.Println(err)
 		}
-		defer res.Close()
-
-		// If no data in table return error
-		if res.IsNil() {
-			log.Println("GetBlogs Row not found")
-			return
-		}
-
-		// Converting all database table info to struct format
-		var blogs []Blogs
-		err = res.All(&blogs)
-		if err != nil {
-			log.Printf("getBlogs Error scanning database result: %s \n", err)
-			return
-		}
-		// Sending Database info as JSON to request
-		result, err := json.Marshal(blogs)
-		if err != nil {
-			log.Printf("getBlogs json marshal error: %s \n", err)
-		}
+		// Send the result to the request
 		fmt.Fprint(w, string(result))
-	}
-}
-
-// AddBlog is API call to Add Blog in DB
-func addBlog(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json") // Set header to JSON
-	fmt.Println(r.Header.Get("Origin"))
-	if origin := r.Header.Get("Origin"); origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST")
-		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	}
-
-	if r.Method == "POST" {
-		// Getting the JSON sent from Frontend
-		// And then decoding the JSON to Blog Struct
-		var b Blogs
-		json.NewDecoder(r.Body).Decode(&b)
-		// Show the result
-		fmt.Printf("%v \n", b)
-
-		// Adding the JSON / Blog Struct to RethingDB
-		// TODO Add Validation
-		resp, err := rethink.DB("api").Table("blogs").Insert(Blogs{
-			ID: b.ID,
-			Blog: Blog{
-				Author:  b.Author,
-				Title:   b.Title,
-				Content: b.Content,
-			}}).RunWrite(session)
-		if err != nil {
-			log.Fatal(err)
-			return
+	case "addblog": // localhost:9000/addblog
+		if r.Method == "POST" {
+			err := api.Add(r)
+			if err != nil {
+				log.Println(err)
+			}
 		}
-		// Will print 1 row inserted
-		fmt.Printf("%d row inserted \n", resp.Inserted)
-	}
-}
-
-// DeleteBlog is API Call to delete blog from DB
-func deleteBlog(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json") // Set header to JSON
-	fmt.Println(r.Header.Get("Origin"))
-	if origin := r.Header.Get("Origin"); origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST")
-		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	}
-
-	if r.Method == "POST" {
-		// Getting the JSON sent from Frontend
-		// And then decoding the JSON to Blog Struct
-		var b Blogs
-		json.NewDecoder(r.Body).Decode(&b)
-		// Show the result
-		fmt.Printf("%v \n", b)
-
-		// Removing the Blog Post from RethingDB
-		// TODO Add Validation
-		resp, err := rethink.DB("api").Table("blogs").Get(b.ID).Delete().RunWrite(session)
-		if err != nil {
-			log.Fatal(err)
-			return
+	case "editblog": // localhost:9000/editblog
+		if r.Method == "POST" {
+			err := api.Edit(r)
+			if err != nil {
+				log.Println(err)
+			}
 		}
-		// will print 1 row deleted in console
-		fmt.Printf("%d row deleted \n", resp.Deleted)
-	}
-}
-
-// editBlog is API call to Edit Blog in DB
-func editBlog(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json") // Set header to JSON
-	fmt.Println(r.Header.Get("Origin"))
-	if origin := r.Header.Get("Origin"); origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Methods", "POST")
-		w.Header().Set("Access-Control-Allow-Headers",
-			"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-	}
-
-	if r.Method == "POST" {
-		// Getting the JSON sent from Frontend
-		// And then decoding the JSON to Blog Struct
-		var b Blogs
-		json.NewDecoder(r.Body).Decode(&b)
-		// Show the result
-		fmt.Printf("%v \n", b)
-
-		// Adding the JSON / Blog Struct to RethingDB
-		// TODO Add Validation
-		resp, err := rethink.DB("api").Table("blogs").Get(b.ID).Update(Blogs{
-			ID: b.ID,
-			Blog: Blog{
-				Author:  b.Author,
-				Title:   b.Title,
-				Content: b.Content,
-			}}).RunWrite(session)
-		if err != nil {
-			log.Fatal(err)
-			return
+	case "deleteblog": // localhost:9000/deleteblog
+		if r.Method == "POST" {
+			err := api.Delete(r)
+			if err != nil {
+				log.Println(err)
+			}
 		}
-		// Will print 1 row replaced
-		fmt.Printf("%d row replaced \n", resp.Replaced)
+	default:
+		fmt.Fprint(w, "API call does not exist")
 	}
 }
