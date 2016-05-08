@@ -37,6 +37,9 @@ func init() {
 	}
 }
 
+// TODO Create one main handleFunc /api/:id (Switch case)
+// TODO create Validation function (Switch case)
+// TODO create Authorization function (and cookies)
 func main() {
 	http.HandleFunc("/api/getblogs", getBlogs)     // localhost:9000/api/getblogs
 	http.HandleFunc("/api/addblog", addBlog)       // localhost:9000/api/addblog
